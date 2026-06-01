@@ -20,7 +20,9 @@ export interface UseGameStateReturn {
   clearSession: () => void;
 }
 
-export function useGameState(serverUrl: string = 'http://localhost:4000'): UseGameStateReturn {
+const DEFAULT_SERVER_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000';
+
+export function useGameState(serverUrl: string = DEFAULT_SERVER_URL): UseGameStateReturn {
   const [gameState, setGameState] = useState<ClientGameStatePayload | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [playerId, setPlayerId] = useState<string | null>(null);
