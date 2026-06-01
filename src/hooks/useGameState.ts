@@ -27,6 +27,28 @@ export function useGameState(serverUrl: string = DEFAULT_SERVER_URL): UseGameSta
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Local ticking of timerRemaining for precise real-time feedback
+  useEffect(() => {
+    if (!gameState || gameState.currentRound.timerRemaining <= 0) return;
+
+    const tick = setInterval(() => {
+      setGameState(prev => {
+        if (!prev || prev.currentRound.timerRemaining <= 0) {
+          return prev;
+        }
+        return {
+          ...prev,
+          currentRound: {
+            ...prev.currentRound,
+            timerRemaining: prev.currentRound.timerRemaining - 1
+          }
+        };
+      });
+    }, 1000);
+
+    return () => clearInterval(tick);
+  }, [gameState?.currentRound.roundNumber, gameState?.currentRound.phase, gameState?.currentRound.activeSpeakerId]);
   
   const socketRef = useRef<Socket | null>(null);
 

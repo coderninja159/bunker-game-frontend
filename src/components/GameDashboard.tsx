@@ -490,7 +490,7 @@ export const GameDashboard: React.FC = () => {
       </main>
 
       {/* FOOTER INTERACTIVE CONSOLE */}
-      <footer className="fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 p-4 z-40">
+      <footer className="fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 p-4 z-[60]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           
           {/* Left: Local surviving metrics */}

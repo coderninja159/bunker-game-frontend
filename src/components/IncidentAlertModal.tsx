@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Card, ClientCard, ClientPlayerProfile, Incident } from '../types';
 import { ShieldAlert, Hourglass, ShieldCheck, Siren } from 'lucide-react';
 
@@ -18,8 +18,15 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
   localPlayerSpecialCards,
   onRevealCard
 }) => {
-  // If no incident or it is mitigated, don't show the modal overlay
-  if (!activeIncident || activeIncident.isMitigated) return null;
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  // Reset dismissal state whenever a new incident is received
+  useEffect(() => {
+    setIsDismissed(false);
+  }, [activeIncident?.id]);
+
+  // If no incident or it is mitigated or timer hits 0, don't show anything
+  if (!activeIncident || activeIncident.isMitigated || timerRemaining <= 0) return null;
 
   // Find matching cards in player's profile and special cards
   const matchingCards = useMemo(() => {
@@ -56,13 +63,28 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
     return 'text-yellow-400 font-semibold';
   };
 
+  // Render minimized floating active warning pill if user manually dismissed it
+  if (isDismissed) {
+    return (
+      <div className="fixed top-24 right-6 z-50 pointer-events-auto">
+        <button 
+          onClick={() => setIsDismissed(false)}
+          className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-950/95 hover:bg-slate-900 border border-red-500/60 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.3)] text-red-400 font-mono text-[10px] uppercase font-black tracking-widest animate-pulse transition"
+        >
+          <Siren className="w-4 h-4 text-red-500 animate-bounce" />
+          <span>Active Incident ({timerRemaining}s)</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Dark frosted overlay with flashing hazard warnings */}
       <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md border border-red-500/20 animate-pulse-warning pointer-events-none" />
 
       {/* Main warning console container */}
-      <div className="relative w-full max-w-xl bg-slate-900 border-2 border-red-500 rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.4)] overflow-hidden z-10">
+      <div className="relative w-full max-w-xl bg-slate-900 border-2 border-red-500 rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.4)] overflow-hidden z-10 pointer-events-auto">
         
         {/* Flashing hazard header stripe */}
         <div className="bg-gradient-to-r from-red-600 via-amber-600 to-red-600 px-6 py-3 flex items-center justify-between border-b-2 border-red-500">
@@ -72,9 +94,18 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
               CRITICAL INCIDENT PROTOCOL
             </span>
           </div>
-          <div className="flex items-center gap-1.5 bg-slate-950/50 px-3 py-1 rounded-md text-xs font-mono font-bold text-red-400 border border-red-500/40">
-            <Hourglass className="w-3.5 h-3.5" />
-            <span className={getTimerStyles()}>{timerRemaining}S</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-slate-950/50 px-3 py-1 rounded-md text-xs font-mono font-bold text-red-400 border border-red-500/40">
+              <Hourglass className="w-3.5 h-3.5" />
+              <span className={getTimerStyles()}>{timerRemaining}S</span>
+            </div>
+            <button 
+              onClick={() => setIsDismissed(true)}
+              className="p-1 bg-slate-950/50 hover:bg-red-500/40 border border-red-500/40 hover:border-red-500 rounded text-slate-300 hover:text-white transition font-bold font-mono text-xs uppercase"
+              title="Minimize Protocol"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
