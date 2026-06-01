@@ -16,7 +16,7 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
   const survivalMetrics = useMemo(() => {
     const playerList = Object.values(players);
     const totalPlayers = playerList.length;
-    if (totalPlayers === 0) return { percent: 100, status: 'NOMINAL', scoreColor: 'text-emerald-400' };
+    if (totalPlayers === 0) return { percent: 100, status: "ME'YORIDA", scoreColor: 'text-emerald-400' };
 
     const alivePlayers = playerList.filter(p => p.isAlive);
     const aliveCount = alivePlayers.length;
@@ -57,8 +57,11 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
       }
       
       const baggage = p.profile?.baggage;
-      if (baggage?.isRevealed && baggage.value?.toLowerCase().includes('radioactive') || baggage?.value?.toLowerCase().includes('infected') || baggage?.value?.toLowerCase().includes('weapon')) {
-        traitScoreModifier -= 4;
+      if (baggage?.isRevealed && baggage.value) {
+        const bagVal = baggage.value.toLowerCase();
+        if (bagVal.includes('radioactive') || bagVal.includes('infected') || bagVal.includes('weapon')) {
+          traitScoreModifier -= 4;
+        }
       }
     });
     
@@ -67,17 +70,17 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
     // Bounds limit
     score = Math.max(0, Math.min(100, score));
 
-    // Status classifications
-    let status = 'NOMINAL';
+    // Status classifications (Uzbek localized)
+    let status = "ME'YORIDA";
     let scoreColor = 'text-emerald-400';
     if (score < 30) {
-      status = 'CRITICAL BREACH';
+      status = 'TIZIM BUZILISHI';
       scoreColor = 'text-red-500 animate-pulse';
     } else if (score < 60) {
-      status = 'HAZARD WARNING';
+      status = 'XAVF OGOHLANTIRISHI';
       scoreColor = 'text-yellow-400';
     } else if (score > 85) {
-      status = 'SECURE SHELTER';
+      status = 'XAVFSIZ PANOHGOH';
       scoreColor = 'text-cyan-400';
     }
 
@@ -100,15 +103,15 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
   };
 
   return (
-    <div className="w-full glass-panel border border-slate-800 rounded-xl p-5 mb-6 relative overflow-hidden">
+    <div className="w-full glass-panel border border-slate-800 rounded-xl p-5 mb-6 relative overflow-hidden backdrop-blur-md bg-slate-900/40">
       {/* Visual cyber scan lines */}
       <div className="absolute inset-0 bg-tech-grid opacity-10 pointer-events-none" />
       
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
         
         {/* Core Gauge Ring */}
-        <div className="flex items-center gap-5">
-          <div className="relative flex items-center justify-center w-24 h-24">
+        <div className="flex flex-col sm:flex-row items-center gap-5 w-full md:w-auto">
+          <div className="relative flex items-center justify-center w-24 h-24 flex-shrink-0">
             {/* SVG circle track */}
             <svg className="w-full h-full transform -rotate-90">
               <circle
@@ -140,21 +143,21 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
                 {progressPercentage}%
               </span>
               <span className="text-[9px] uppercase tracking-widest text-slate-400 font-mono">
-                Survival
+                OMON QOLISH
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start gap-2">
               <Activity className="w-4 h-4 text-slate-400 animate-pulse" />
-              <span className="text-xs uppercase tracking-wider font-mono text-slate-400">System Integrity</span>
+              <span className="text-xs uppercase tracking-wider font-mono text-slate-400">TIZIM BUTUNLIGI</span>
             </div>
-            <h2 className={`text-lg font-mono font-bold tracking-wide ${survivalMetrics.scoreColor}`}>
+            <h2 className={`text-lg font-mono font-bold tracking-wide mt-0.5 ${survivalMetrics.scoreColor}`}>
               {survivalMetrics.status}
             </h2>
             <p className="text-xs text-slate-400 max-w-xs leading-relaxed mt-1">
-              Bunker specs require {survivalMetrics.capacity} occupants. Active population: {survivalMetrics.aliveCount} survivors.
+              Bunker sig'imi: {survivalMetrics.capacity} kishi. Hozirgi aholi: {survivalMetrics.aliveCount} tirik omon qolgan.
             </p>
           </div>
         </div>
@@ -162,10 +165,10 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
         {/* Survival Indicator Bar and stats */}
         <div className="w-full md:w-1/3 flex flex-col gap-2">
           <div className="flex justify-between text-xs font-mono">
-            <span className="text-slate-400 uppercase">Bunker Integrity Status</span>
-            <span className={survivalMetrics.scoreColor}>{progressPercentage >= 30 ? 'STABLE' : 'CRITICAL'}</span>
+            <span className="text-slate-400 uppercase">Bunker Butunligi Holati</span>
+            <span className={survivalMetrics.scoreColor}>{progressPercentage >= 30 ? 'BARQAROR' : 'XAVFLI'}</span>
           </div>
-          <div className="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-[2px]">
+          <div className="h-3 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800 p-[2px]">
             <div 
               className={`h-full rounded-full transition-all duration-1000 ease-out ${getProgressBarColor()}`}
               style={{ width: `${progressPercentage}%` }}
@@ -173,10 +176,10 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
           </div>
           <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 mt-1">
             <span className="flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5" /> Max Capacity: {survivalMetrics.capacity}
+              <Shield className="w-3.5 h-3.5" /> Maks. Sig'im: {survivalMetrics.capacity}
             </span>
             <span className="flex items-center gap-1">
-              <Users className="w-3.5 h-3.5" /> Alive: {survivalMetrics.aliveCount}
+              <Users className="w-3.5 h-3.5" /> Tiriklar: {survivalMetrics.aliveCount}
             </span>
           </div>
         </div>
@@ -184,11 +187,11 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
 
       {/* Roster of survivors */}
       <div className="mt-5 pt-4 border-t border-slate-800/80">
-        <h3 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-          <Radio className="w-3.5 h-3.5 animate-pulse text-emerald-400" /> Life Support Telemetry Roster
+        <h3 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5 justify-center sm:justify-start">
+          <Radio className="w-3.5 h-3.5 animate-pulse text-emerald-400" /> HAYOTNI TA'MINLASH TELEMETRIYA RO'YXATI
         </h3>
         
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {Object.values(players).map((player: ClientPlayer) => {
             const isSelf = player.id === localPlayerId;
             const isSpeaker = player.id === currentRound.activeSpeakerId;
@@ -197,7 +200,7 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
             return (
               <div 
                 key={player.id}
-                className={`p-2.5 rounded-lg border text-left transition-all relative ${
+                className={`p-2.5 rounded-lg border text-left transition-all relative h-auto flex flex-col justify-between ${
                   !player.isAlive 
                     ? 'border-red-950/30 bg-red-950/5 opacity-50' 
                     : isSpeaker 
@@ -210,17 +213,17 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
                 {/* Speaker indicator tag */}
                 {isSpeaker && (
                   <span className="absolute -top-1.5 right-2 px-1.5 py-0.5 text-[8px] bg-emerald-500 text-slate-950 rounded font-bold font-mono tracking-tighter uppercase animate-pulse">
-                    SPEAKING
+                    GAPIRMOQDA
                   </span>
                 )}
 
-                <div className="flex items-center justify-between gap-1.5">
+                <div className="flex items-center justify-between gap-1.5 mb-1.5">
                   <span className={`text-xs font-medium truncate ${isSelf ? 'text-slate-100 font-bold' : 'text-slate-300'}`}>
-                    {player.name} {isSelf && '(You)'}
+                    {player.name} {isSelf && '(Siz)'}
                   </span>
                   
                   {/* Status lights */}
-                  <span className="flex items-center">
+                  <span className="flex items-center flex-shrink-0">
                     {!player.isAlive ? (
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Eliminated" />
                     ) : !player.isConnected ? (
@@ -231,12 +234,12 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between mt-1 text-[10px] font-mono text-slate-500">
-                  <span>Votes: {player.votesReceived}</span>
+                <div className="flex items-center justify-between mt-auto text-[10px] font-mono text-slate-500">
+                  <span>Ovozlar: {player.votesReceived}</span>
                   {hasVoted ? (
-                    <span className="text-emerald-400 font-bold" title="Vote Cast">VOTED</span>
+                    <span className="text-emerald-400 font-bold" title="Ovoz berdi">OVOZ BERDI</span>
                   ) : (
-                    <span className="text-slate-600">WAITING</span>
+                    <span className="text-slate-600">KUTMOQDA</span>
                   )}
                 </div>
               </div>

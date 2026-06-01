@@ -72,11 +72,22 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
           className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-950/95 hover:bg-slate-900 border border-red-500/60 rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.3)] text-red-400 font-mono text-[10px] uppercase font-black tracking-widest animate-pulse transition"
         >
           <Siren className="w-4 h-4 text-red-500 animate-bounce" />
-          <span>Active Incident ({timerRemaining}s)</span>
+          <span>Faol Xavf ({timerRemaining}s)</span>
         </button>
       </div>
     );
   }
+
+  // Helper to translate card type for user profile
+  const translateCardType = (type: string) => {
+    const t = type.toLowerCase();
+    if (t === 'biology') return 'Biologiya';
+    if (t === 'profession') return 'Kasb';
+    if (t === 'hobby') return 'Xobbi';
+    if (t === 'phobia') return 'Psixologiya';
+    if (t === 'baggage') return 'Yuk (Baqaj)';
+    return type;
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -91,7 +102,7 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
           <div className="flex items-center gap-2">
             <Siren className="w-5 h-5 text-white animate-bounce" />
             <span className="text-sm font-black font-mono tracking-widest text-white animate-pulse">
-              CRITICAL INCIDENT PROTOCOL
+              FAVQULODDA VAZIYAT PROTOKOLI
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -102,7 +113,7 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
             <button 
               onClick={() => setIsDismissed(true)}
               className="p-1 bg-slate-950/50 hover:bg-red-500/40 border border-red-500/40 hover:border-red-500 rounded text-slate-300 hover:text-white transition font-bold font-mono text-xs uppercase"
-              title="Minimize Protocol"
+              title="Yopish"
             >
               ✕
             </button>
@@ -115,7 +126,7 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
             <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.15)] flex-shrink-0">
               <ShieldAlert className="w-8 h-8 stroke-[1.5]" />
             </div>
-            <div>
+            <div className="text-left">
               <h2 className="text-xl font-bold font-mono tracking-wide text-red-400">
                 {activeIncident.title}
               </h2>
@@ -126,10 +137,10 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
           </div>
 
           {/* Incident Requirements Grid */}
-          <div className="grid grid-cols-2 gap-4 p-4 bg-slate-950/55 rounded-xl border border-slate-800/80 mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-950/55 rounded-xl border border-slate-800/80 mb-5 text-left">
             <div>
               <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1">
-                Required Capability
+                Talab qilinadigan Qobiliyat
               </span>
               <div className="flex flex-wrap gap-1">
                 {activeIncident.requiredMitigationTags.map((tag, idx) => (
@@ -144,18 +155,18 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
             </div>
             <div>
               <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1">
-                Failure Consequences
+                Muvaffaqiyatsizlik Oqibati
               </span>
               <span className="text-xs font-mono text-red-400 uppercase font-bold">
-                {activeIncident.penaltyType.replace('_', ' ')} (-{activeIncident.penaltyValue}%)
+                {activeIncident.penaltyType === 'health_damage' ? 'Salomatlik zarari' : activeIncident.penaltyType === 'resource_loss' ? 'Resurs yo\'qolishi' : 'Bunker nosozligi'} (-{activeIncident.penaltyValue}%)
               </span>
             </div>
           </div>
 
           {/* Local mitigation helper console */}
           <div className="mt-5 border-t border-slate-800/60 pt-4">
-            <h3 className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-3">
-              BIO-METRIC SCANNER RESULT
+            <h3 className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-3 text-left">
+              BIOMETRIK SKANER NATIJASI
             </h3>
 
             {hasMatches ? (
@@ -163,7 +174,7 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
                 <div className="flex items-center gap-2 text-emerald-400 mb-3">
                   <ShieldCheck className="w-4.5 h-4.5 animate-pulse" />
                   <span className="text-xs font-mono font-bold uppercase tracking-wider">
-                    Compatible Mitigation Key Detected!
+                    Mos keladigan bartaraf etish kaliti aniqlandi!
                   </span>
                 </div>
                 
@@ -175,23 +186,23 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
                     >
                       <div className="text-left">
                         <span className="text-[10px] uppercase font-mono text-slate-500">
-                          {card.type}
+                          {translateCardType(card.type)}
                         </span>
                         <p className="text-xs font-semibold text-slate-200">
-                          {card.isRevealed ? card.value : 'CLASSIFIED DATA'}
+                          {card.isRevealed ? card.value : 'MAXFIY MA\'LUMOT'}
                         </p>
                       </div>
                       
                       {!card.isRevealed ? (
                         <button
                           onClick={() => onRevealCard(card.id)}
-                          className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 rounded transition shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                          className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 rounded transition shadow-[0_0_10px_rgba(16,185,129,0.3)] animate-pulse"
                         >
-                          Declassify Mitigator
+                          Tafsilotni Ochish
                         </button>
                       ) : (
                         <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/50 border border-emerald-500/20 px-2.5 py-1.5 rounded">
-                          DEPLOYED PUBLICLY
+                          OSHKOR ETILDI
                         </span>
                       )}
                     </div>
@@ -200,9 +211,9 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
               </div>
             ) : (
               <div className="p-4 bg-slate-950/40 border border-slate-800/80 rounded-xl text-center text-slate-500 font-mono text-xs leading-relaxed">
-                <p>NO DIRECT COMPATIBILITY IN YOUR BIO-METRIC HAND.</p>
+                <p>QO'LINGIZDA MOS KELUVCHI BIOMETRIK KARTA MAVJUD EMAS.</p>
                 <p className="mt-1 text-[10px] text-slate-600 font-sans uppercase">
-                  Coordinate with other bunker members immediately via radio to find mitigators.
+                  Bartaraf etuvchilarni topish uchun zudlik bilan boshqa a'zolar bilan bog'laning.
                 </p>
               </div>
             )}
