@@ -10,15 +10,15 @@ interface LiveSurvivalBarProps {
 
 export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, localPlayerId }) => {
   const { theme } = useThemeContext();
-  const { players, activeIncident, disaster, currentRound } = gameState;
+  const { players, activeIncident, disaster, currentRound } = gameState || {};
 
   // Real-time calculation of bunker survival metrics
   const survivalMetrics = useMemo(() => {
-    const playerList = Object.values(players);
+    const playerList = Object.values(players || {});
     const totalPlayers = playerList.length;
     if (totalPlayers === 0) return { percent: 100, status: "ME'YORIDA", scoreColor: 'text-emerald-400' };
 
-    const alivePlayers = playerList.filter(p => p.isAlive);
+    const alivePlayers = playerList.filter(p => p && p.isAlive);
     const aliveCount = alivePlayers.length;
     const capacity = disaster?.bunker?.capacity || 4;
 
@@ -42,6 +42,7 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
     // 3. Revealed Character Traits analysis
     let traitScoreModifier = 0;
     alivePlayers.forEach(p => {
+      if (!p) return;
       // Profession matching
       const prof = p.profile?.profession?.value?.toLowerCase() || '';
       if (prof.includes('surgeon') || prof.includes('doctor') || prof.includes('medic') || prof.includes('engineer') || prof.includes('welder') || prof.includes('botanist') || prof.includes('farmer') || prof.includes('soldier')) {
@@ -99,7 +100,7 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
   const getProgressBarColor = () => {
     if (progressPercentage < 30) return 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.7)]';
     if (progressPercentage < 60) return 'bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.7)]';
-    return `bg-gradient-to-r from-emerald-500 to-${theme.themeColor === '#10b981' ? 'emerald' : 'cyan'}-400 shadow-[0_0_12px_var(--theme-glow)]`;
+    return `bg-gradient-to-r from-emerald-500 to-${theme?.themeColor === '#10b981' ? 'emerald' : 'cyan'}-400 shadow-[0_0_12px_var(--theme-glow)]`;
   };
 
   return (
@@ -192,9 +193,10 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
         </h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {Object.values(players).map((player: ClientPlayer) => {
+          {Object.values(players || {})?.map((player: ClientPlayer) => {
+            if (!player) return null;
             const isSelf = player.id === localPlayerId;
-            const isSpeaker = player.id === currentRound.activeSpeakerId;
+            const isSpeaker = player.id === currentRound?.activeSpeakerId;
             const hasVoted = player.hasVoted;
             
             return (
@@ -235,7 +237,7 @@ export const LiveSurvivalBar: React.FC<LiveSurvivalBarProps> = ({ gameState, loc
                 </div>
 
                 <div className="flex items-center justify-between mt-auto text-[10px] font-mono text-slate-500">
-                  <span>Ovozlar: {player.votesReceived}</span>
+                  <span>Ovozlar: {player.votesReceived || 0}</span>
                   {hasVoted ? (
                     <span className="text-emerald-400 font-bold" title="Ovoz berdi">OVOZ BERDI</span>
                   ) : (

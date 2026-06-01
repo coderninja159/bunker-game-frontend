@@ -25,36 +25,37 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
     setIsDismissed(false);
   }, [activeIncident?.id]);
 
-  // If no incident or it is mitigated or timer hits 0, don't show anything
-  if (!activeIncident || activeIncident.isMitigated || timerRemaining <= 0) return null;
-
   // Find matching cards in player's profile and special cards
   const matchingCards = useMemo(() => {
-    if (!localPlayerProfile) return [];
+    if (!localPlayerProfile || !activeIncident) return [];
     
+    // Prevent fresh array allocations on parent renders from breaking memo keys
+    const specialCards = localPlayerSpecialCards || [];
     const allPlayerCards: ClientCard[] = [
       localPlayerProfile.biology,
       localPlayerProfile.profession,
       localPlayerProfile.hobby,
       localPlayerProfile.phobia,
       localPlayerProfile.baggage,
-      ...localPlayerSpecialCards
+      ...specialCards
     ];
 
     return allPlayerCards.filter(card => {
+      if (!card) return false;
       const valueStr = (card.value || '').toLowerCase();
-      const typeStr = card.type.toLowerCase();
+      const typeStr = (card.type || '').toLowerCase();
 
-      return activeIncident.requiredMitigationTags.some(tag => {
+      return (activeIncident.requiredMitigationTags || []).some(tag => {
+        if (!tag) return false;
         const lowerTag = tag.toLowerCase();
         if (typeStr === lowerTag) return true;
         if (valueStr.includes(lowerTag)) return true;
         return false;
       });
     });
-  }, [activeIncident, localPlayerProfile, localPlayerSpecialCards]);
+  }, [activeIncident?.id, localPlayerProfile, localPlayerSpecialCards]);
 
-  const hasMatches = matchingCards.length > 0;
+  const hasMatches = (matchingCards || []).length > 0;
 
   // Visual status for the warning level
   const getTimerStyles = () => {
@@ -62,6 +63,21 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
     if (timerRemaining <= 25) return 'text-orange-400 font-bold';
     return 'text-yellow-400 font-semibold';
   };
+
+  // Helper to translate card type for user profile
+  const translateCardType = (type: string) => {
+    if (!type) return '';
+    const t = type.toLowerCase();
+    if (t === 'biology') return 'Biologiya';
+    if (t === 'profession') return 'Kasb';
+    if (t === 'hobby') return 'Xobbi';
+    if (t === 'phobia') return 'Psixologiya';
+    if (t === 'baggage') return 'Yuk (Baqaj)';
+    return type;
+  };
+
+  // If no incident or it is mitigated or timer hits 0, don't show anything
+  if (!activeIncident || activeIncident.isMitigated || timerRemaining <= 0) return null;
 
   // Render minimized floating active warning pill if user manually dismissed it
   if (isDismissed) {
@@ -77,17 +93,6 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
       </div>
     );
   }
-
-  // Helper to translate card type for user profile
-  const translateCardType = (type: string) => {
-    const t = type.toLowerCase();
-    if (t === 'biology') return 'Biologiya';
-    if (t === 'profession') return 'Kasb';
-    if (t === 'hobby') return 'Xobbi';
-    if (t === 'phobia') return 'Psixologiya';
-    if (t === 'baggage') return 'Yuk (Baqaj)';
-    return type;
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -128,10 +133,10 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
             </div>
             <div className="text-left">
               <h2 className="text-xl font-bold font-mono tracking-wide text-red-400">
-                {activeIncident.title}
+                {activeIncident?.title || 'FAOL XAVF'}
               </h2>
               <p className="text-sm text-slate-300 mt-1.5 leading-relaxed">
-                {activeIncident.description}
+                {activeIncident?.description || ''}
               </p>
             </div>
           </div>
@@ -143,7 +148,7 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
                 Talab qilinadigan Qobiliyat
               </span>
               <div className="flex flex-wrap gap-1">
-                {activeIncident.requiredMitigationTags.map((tag, idx) => (
+                {activeIncident?.requiredMitigationTags?.map((tag, idx) => (
                   <span 
                     key={idx} 
                     className="px-2 py-0.5 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded font-mono uppercase font-semibold"
@@ -158,7 +163,7 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
                 Muvaffaqiyatsizlik Oqibati
               </span>
               <span className="text-xs font-mono text-red-400 uppercase font-bold">
-                {activeIncident.penaltyType === 'health_damage' ? 'Salomatlik zarari' : activeIncident.penaltyType === 'resource_loss' ? 'Resurs yo\'qolishi' : 'Bunker nosozligi'} (-{activeIncident.penaltyValue}%)
+                {activeIncident?.penaltyType === 'health_damage' ? 'Salomatlik zarari' : activeIncident?.penaltyType === 'resource_loss' ? 'Resurs yo\'qolishi' : 'Bunker nosozligi'} (-{activeIncident?.penaltyValue || 0}%)
               </span>
             </div>
           </div>
@@ -179,34 +184,37 @@ export const IncidentAlertModal: React.FC<IncidentAlertModalProps> = ({
                 </div>
                 
                 <div className="space-y-2.5">
-                  {matchingCards.map(card => (
-                    <div 
-                      key={card.id} 
-                      className="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-800 rounded-lg hover:border-emerald-500/50 transition-colors"
-                    >
-                      <div className="text-left">
-                        <span className="text-[10px] uppercase font-mono text-slate-500">
-                          {translateCardType(card.type)}
-                        </span>
-                        <p className="text-xs font-semibold text-slate-200">
-                          {card.isRevealed ? card.value : 'MAXFIY MA\'LUMOT'}
-                        </p>
+                  {matchingCards?.map(card => {
+                    if (!card) return null;
+                    return (
+                      <div 
+                        key={card.id} 
+                        className="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-800 rounded-lg hover:border-emerald-500/50 transition-colors"
+                      >
+                        <div className="text-left">
+                          <span className="text-[10px] uppercase font-mono text-slate-500">
+                            {translateCardType(card.type)}
+                          </span>
+                          <p className="text-xs font-semibold text-slate-200">
+                            {card.isRevealed ? card.value : 'MAXFIY MA\'LUMOT'}
+                          </p>
+                        </div>
+                        
+                        {!card.isRevealed ? (
+                          <button
+                            onClick={() => onRevealCard(card.id)}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 rounded transition shadow-[0_0_10px_rgba(16,185,129,0.3)] animate-pulse"
+                          >
+                            Tafsilotni Ochish
+                          </button>
+                        ) : (
+                          <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/50 border border-emerald-500/20 px-2.5 py-1.5 rounded">
+                            OSHKOR ETILDI
+                          </span>
+                        )}
                       </div>
-                      
-                      {!card.isRevealed ? (
-                        <button
-                          onClick={() => onRevealCard(card.id)}
-                          className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 rounded transition shadow-[0_0_10px_rgba(16,185,129,0.3)] animate-pulse"
-                        >
-                          Tafsilotni Ochish
-                        </button>
-                      ) : (
-                        <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/50 border border-emerald-500/20 px-2.5 py-1.5 rounded">
-                          OSHKOR ETILDI
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (

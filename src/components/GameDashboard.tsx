@@ -296,12 +296,12 @@ export const GameDashboard: React.FC = () => {
 
       {/* Incident Modal Overlay */}
       <IncidentAlertModal 
-        activeIncident={gameState.activeIncident}
-        timerRemaining={gameState.currentRound.timerRemaining}
+        activeIncident={gameState?.activeIncident || null}
+        timerRemaining={gameState?.currentRound?.timerRemaining || 0}
         localPlayerProfile={localPlayer?.profile || null}
-        localPlayerSpecialCards={gameState.localPlayer?.specialCards || []}
-        onRevealCard={(cid) => revealCard(gameState.roomId, cid)}
-        roomId={gameState.roomId}
+        localPlayerSpecialCards={gameState?.localPlayer?.specialCards}
+        onRevealCard={(cid) => revealCard(gameState?.roomId || '', cid)}
+        roomId={gameState?.roomId || ''}
       />
 
       {/* TOP HEADER HUD */}
@@ -367,7 +367,7 @@ export const GameDashboard: React.FC = () => {
                 <div className="mt-3 flex flex-col gap-1.5">
                   <span className="text-[9px] font-mono text-slate-500 uppercase block">Faol Iqlim Xavflari</span>
                   <div className="flex flex-wrap gap-1">
-                    {gameState.location.primaryHazards.map((haz, idx) => (
+                    {gameState?.location?.primaryHazards?.map((haz, idx) => (
                       <span key={idx} className="px-2 py-0.5 bg-red-950/20 border border-red-500/20 text-[10px] font-mono uppercase text-red-400 rounded">
                         {translateToUzbek(haz)}
                       </span>
@@ -406,7 +406,7 @@ export const GameDashboard: React.FC = () => {
                 <div>
                   <span className="text-[9px] font-mono text-slate-500 uppercase block mb-1">Ro'yxatga Olingan Resurslar</span>
                   <div className="flex flex-wrap gap-1">
-                    {gameState.disaster.bunker.supplies.map((sup, idx) => (
+                    {gameState?.disaster?.bunker?.supplies?.map((sup, idx) => (
                       <span key={idx} className="px-1.5 py-0.5 bg-slate-950 border border-slate-800 text-[9px] font-mono text-slate-400 rounded">
                         {sup}
                       </span>
@@ -442,8 +442,8 @@ export const GameDashboard: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {Object.values(gameState.players).map((player) => {
-              if (player.id === playerId) return null; // Render other survivors here
+            {Object.values(gameState?.players || {})?.map((player) => {
+              if (!player || player.id === playerId) return null; // Render other survivors here
 
               const cardTypes = ['biology', 'profession', 'hobby', 'phobia', 'baggage'] as const;
               
@@ -494,8 +494,9 @@ export const GameDashboard: React.FC = () => {
 
                   {/* Character metrics grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                    {cardTypes.map(key => {
-                      const card = player.profile[key];
+                    {cardTypes?.map(key => {
+                      const card = player?.profile?.[key];
+                      if (!card) return null;
                       const isRevealed = card.isRevealed;
                       
                       return (
@@ -527,10 +528,10 @@ export const GameDashboard: React.FC = () => {
         <section className="w-full glass-panel rounded-xl p-5 border border-slate-800 backdrop-blur-md bg-slate-900/40 mb-28">
           <PlayerCardHand 
             profile={localPlayer.profile}
-            specialCards={gameState.localPlayer?.specialCards || []}
-            activeIncident={gameState.activeIncident}
-            roomId={gameState.roomId}
-            onRevealCard={(cid) => revealCard(gameState.roomId, cid)}
+            specialCards={gameState?.localPlayer?.specialCards}
+            activeIncident={gameState?.activeIncident}
+            roomId={gameState?.roomId || ''}
+            onRevealCard={(cid) => revealCard(gameState?.roomId || '', cid)}
             isSelfAlive={localPlayer.isAlive}
           />
         </section>

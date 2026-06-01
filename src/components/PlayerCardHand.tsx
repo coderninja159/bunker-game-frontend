@@ -4,7 +4,7 @@ import { Heart, Briefcase, Smile, Brain, ShieldAlert, Sparkles, Lock, Eye } from
 
 interface PlayerCardHandProps {
   profile: ClientPlayerProfile | null;
-  specialCards: Card[];
+  specialCards?: Card[];
   activeIncident: Incident | null;
   roomId: string;
   onRevealCard: (cardId: string) => void;
@@ -26,6 +26,9 @@ export const PlayerCardHand: React.FC<PlayerCardHandProps> = ({
     );
   }
 
+  // Prevent fresh array creation on parent renders from breaking child hook keys
+  const cards = specialCards || [];
+
   const cardsList = [
     { key: 'biology', card: profile.biology, title: 'Biologiya / Salomatlik', icon: Heart, border: 'border-emerald-500/30 text-emerald-400 bg-emerald-950/10' },
     { key: 'profession', card: profile.profession, title: 'Kasb', icon: Briefcase, border: 'border-cyan-500/30 text-cyan-400 bg-cyan-950/10' },
@@ -36,11 +39,12 @@ export const PlayerCardHand: React.FC<PlayerCardHandProps> = ({
 
   // Logic to determine if a card matches the incident mitigation tags
   const doesCardMitigate = (card: ClientCard | Card) => {
-    if (!activeIncident || activeIncident.isMitigated) return false;
+    if (!activeIncident || activeIncident.isMitigated || !card) return false;
     const valueStr = (card.value || '').toLowerCase();
-    const typeStr = card.type.toLowerCase();
+    const typeStr = (card.type || '').toLowerCase();
 
-    return activeIncident.requiredMitigationTags.some(tag => {
+    return (activeIncident.requiredMitigationTags || []).some(tag => {
+      if (!tag) return false;
       const lowerTag = tag.toLowerCase();
       // Match if card type matches tag (e.g. tag is 'biology' or 'profession')
       if (typeStr === lowerTag) return true;
@@ -65,7 +69,8 @@ export const PlayerCardHand: React.FC<PlayerCardHandProps> = ({
 
       {/* Main attributes container */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {cardsList.map(({ key, card, title, icon: Icon, border }) => {
+        {cardsList?.map(({ key, card, title, icon: Icon, border }) => {
+          if (!card) return null;
           const isMitigating = doesCardMitigate(card);
           const isRevealed = card.isRevealed;
 
@@ -138,9 +143,9 @@ export const PlayerCardHand: React.FC<PlayerCardHandProps> = ({
               </div>
 
               {/* Card Compatibility Footer (if revealed and exists) */}
-              {isRevealed && card.compatibility?.mitigates && card.compatibility.mitigates.length > 0 && (
+              {isRevealed && card.compatibility?.mitigates && (card.compatibility.mitigates || []).length > 0 && (
                 <div className="px-3 py-1.5 bg-slate-950/40 border-t border-slate-800/40 text-[9px] font-mono text-slate-400 text-left rounded-b-xl flex items-center justify-between">
-                  <span className="truncate">Qarshilik: {card.compatibility.mitigates.join(', ')}</span>
+                  <span className="truncate">Qarshilik: {(card.compatibility.mitigates || []).join(', ')}</span>
                 </div>
               )}
             </div>
@@ -149,13 +154,14 @@ export const PlayerCardHand: React.FC<PlayerCardHandProps> = ({
       </div>
 
       {/* Special actions card deck if player has any */}
-      {specialCards && specialCards.length > 0 && (
+      {cards && cards.length > 0 && (
         <div className="mt-8">
           <h4 className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-purple-400" /> MAXSUS TAKTIK KARTALAR
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {specialCards.map((card: Card) => {
+            {cards?.map((card: Card) => {
+              if (!card) return null;
               const isMitigating = doesCardMitigate(card);
               return (
                 <div
@@ -175,11 +181,11 @@ export const PlayerCardHand: React.FC<PlayerCardHandProps> = ({
                   <div>
                     <div className="flex justify-between items-center text-[10px] font-mono text-purple-400 uppercase tracking-wider mb-2">
                       <span>TAKTIK HARAKAT</span>
-                      <span>ID: {card.id.slice(0, 4)}</span>
+                      <span>ID: {card.id?.slice(0, 4) || ''}</span>
                     </div>
                     <div className="overflow-y-auto max-h-[80px] pr-1 scrollbar-thin">
                       <p className="text-xs font-medium text-slate-300 leading-snug">
-                        {card.value}
+                        {card.value || ''}
                       </p>
                     </div>
                   </div>
